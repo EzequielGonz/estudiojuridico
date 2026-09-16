@@ -14,7 +14,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="is-loading">
+
+<!-- ================= PRELOADER ================= -->
+<div class="preloader" id="preloader">
+  <div class="preloader-inner">
+    <svg class="preloader-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="3" x2="12" y2="21"/><line x1="5" y1="7" x2="19" y2="7"/>
+      <path d="M5 7l-3 6a3 3 0 0 0 6 0z"/><path d="M19 7l-3 6a3 3 0 0 0 6 0z"/>
+      <line x1="8" y1="21" x2="16" y2="21"/>
+    </svg>
+    <div class="preloader-word">V<em>ita</em></div>
+    <div class="preloader-bar"><span id="preloader-bar-fill"></span></div>
+  </div>
+</div>
+
+<!-- ================= SCROLL PROGRESS ================= -->
+<div class="scroll-progress"><span id="scroll-progress-bar"></span></div>
+
+<!-- ================= CUSTOM CURSOR ================= -->
+<div class="cursor-dot" id="cursor-dot"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
 
 <!-- ================= HEADER ================= -->
 <header class="site-header">
@@ -101,10 +121,15 @@
 
   <!-- ================= HERO ================= -->
   <section id="inicio" class="hero">
+    <svg class="watermark hero-watermark" data-parallax="0.18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="3" x2="12" y2="21"/><line x1="5" y1="7" x2="19" y2="7"/>
+      <path d="M5 7l-3 6a3 3 0 0 0 6 0z"/><path d="M19 7l-3 6a3 3 0 0 0 6 0z"/>
+      <line x1="8" y1="21" x2="16" y2="21"/>
+    </svg>
     <div class="wrap">
       <div class="hero-grid">
-        <div data-in>
-          <h1>Un estudio jurídico integral, al servicio de las personas</h1>
+        <div>
+          <h1 id="hero-title">Un estudio jurídico integral, al servicio de las personas</h1>
         </div>
         <div class="hero-side" data-in data-in-d="1">
           <p>Vita asesora a personas, familias y empresas en Buenos Aires desde hace más de quince años, en ocho áreas del derecho, combinando rigor técnico con una atención cercana y directa en cada caso.</p>
@@ -124,8 +149,8 @@
   <!-- ================= PERFIL / NOSOTROS ================= -->
   <section id="nosotros" class="band">
     <div class="wrap profile-grid">
-      <div data-in class="profile-figure">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#f5e8ea" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round">
+      <div data-in data-tilt class="profile-figure">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="3" x2="12" y2="21"/><line x1="5" y1="7" x2="19" y2="7"/>
           <path d="M5 7l-3 6a3 3 0 0 0 6 0z"/><path d="M19 7l-3 6a3 3 0 0 0 6 0z"/>
           <line x1="8" y1="21" x2="16" y2="21"/>
@@ -460,6 +485,11 @@
 
   <!-- ================= CLOSING ================= -->
   <section class="closing">
+    <svg class="watermark closing-watermark" data-parallax="0.12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="3" x2="12" y2="21"/><line x1="5" y1="7" x2="19" y2="7"/>
+      <path d="M5 7l-3 6a3 3 0 0 0 6 0z"/><path d="M19 7l-3 6a3 3 0 0 0 6 0z"/>
+      <line x1="8" y1="21" x2="16" y2="21"/>
+    </svg>
     <div class="wrap">
       <h2>¿Necesitás asesoramiento legal? Conversemos.</h2>
       <a href="#contacto" class="btn btn-line">

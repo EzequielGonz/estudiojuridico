@@ -1,11 +1,70 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const canFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  /* ---------- Hero title word-split (must run before preloader fades) ---------- */
+  const heroTitle = document.getElementById('hero-title');
+  if (heroTitle) {
+    const words = heroTitle.textContent.trim().split(/\s+/);
+    heroTitle.innerHTML = words.map((w, i) =>
+      `<span class="word"><span class="word-inner" style="transition-delay:${(i * 0.045).toFixed(3)}s">${w}</span></span>`
+    ).join(' ');
+  }
+
+  /* ---------- Preloader ---------- */
+  (function preloader() {
+    const pre = document.getElementById('preloader');
+    const fill = document.getElementById('preloader-bar-fill');
+    if (!pre) return;
+    const start = performance.now();
+    const minDisplay = reduceMotion ? 0 : 1100;
+    let done = false;
+
+    const tick = () => {
+      if (done) return;
+      const elapsed = performance.now() - start;
+      const target = Math.min(90, (elapsed / 1400) * 90);
+      fill.style.width = target + '%';
+      requestAnimationFrame(tick);
+    };
+    if (fill) requestAnimationFrame(tick);
+
+    const finish = () => {
+      if (done) return;
+      done = true;
+      const elapsed = performance.now() - start;
+      const wait = Math.max(0, minDisplay - elapsed);
+      setTimeout(() => {
+        if (fill) fill.style.width = '100%';
+        setTimeout(() => {
+          pre.classList.add('done');
+          document.body.classList.remove('is-loading');
+          const hero = document.querySelector('.hero');
+          if (hero) hero.classList.add('loaded');
+        }, reduceMotion ? 0 : 260);
+      }, wait);
+    };
+
+    if (document.readyState === 'complete') finish();
+    else window.addEventListener('load', finish);
+    // Safety net: never block the site if 'load' is delayed by a slow asset.
+    setTimeout(finish, 5000);
+  })();
+
+  /* ---------- Header scroll state, back-to-top, scroll progress ---------- */
   const header = document.querySelector('.site-header');
   const utilTop = document.querySelector('.util-top');
+  const progressBar = document.getElementById('scroll-progress-bar');
 
   const onScroll = () => {
     header.classList.toggle('scrolled', window.scrollY > 30);
     utilTop.classList.toggle('show', window.scrollY > 700);
+    if (progressBar) {
+      const doc = document.documentElement;
+      const max = doc.scrollHeight - doc.clientHeight;
+      progressBar.style.width = (max > 0 ? (window.scrollY / max) * 100 : 0) + '%';
+    }
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
@@ -65,6 +124,74 @@ document.addEventListener('DOMContentLoaded', () => {
     revealEls.forEach(el => io.observe(el));
   } else {
     revealEls.forEach(el => el.classList.add('shown'));
+  }
+
+  /* ---------- Parallax (desktop only) ---------- */
+  const parallaxEls = document.querySelectorAll('[data-parallax]');
+  if (parallaxEls.length && !reduceMotion && window.innerWidth > 860) {
+    let ticking = false;
+    const updateParallax = () => {
+      const vh = window.innerHeight;
+      parallaxEls.forEach(el => {
+        const speed = parseFloat(el.dataset.parallax) || 0.15;
+        const rect = el.getBoundingClientRect();
+        const center = rect.top + rect.height / 2 - vh / 2;
+        el.style.transform = `translateY(${(center * -speed).toFixed(1)}px)`;
+      });
+      ticking = false;
+    };
+    window.addEventListener('scroll', () => {
+      if (!ticking) { requestAnimationFrame(updateParallax); ticking = true; }
+    }, { passive: true });
+    updateParallax();
+  }
+
+  /* ---------- Custom cursor, magnetic buttons, card tilt (fine pointer only) ---------- */
+  if (canFine && !reduceMotion) {
+    const dot = document.getElementById('cursor-dot');
+    const ring = document.getElementById('cursor-ring');
+
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2, rx = mx, ry = my;
+    window.addEventListener('mousemove', (e) => {
+      mx = e.clientX; my = e.clientY;
+      document.body.classList.add('has-cursor');
+      if (dot) { dot.style.left = mx + 'px'; dot.style.top = my + 'px'; }
+    });
+    document.addEventListener('mouseleave', () => document.body.classList.remove('has-cursor'));
+    const ringLoop = () => {
+      rx += (mx - rx) * 0.18;
+      ry += (my - ry) * 0.18;
+      if (ring) { ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; }
+      requestAnimationFrame(ringLoop);
+    };
+    ringLoop();
+
+    document.querySelectorAll('a, button, .practice-row, input, textarea, select').forEach(el => {
+      el.addEventListener('mouseenter', () => ring && ring.classList.add('hovered'));
+      el.addEventListener('mouseleave', () => ring && ring.classList.remove('hovered'));
+    });
+
+    /* Magnetic buttons */
+    document.querySelectorAll('.btn:not(.btn-block), .util-btn').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const r = btn.getBoundingClientRect();
+        const x = e.clientX - r.left - r.width / 2;
+        const y = e.clientY - r.top - r.height / 2;
+        btn.style.transform = `translate(${(x * 0.25).toFixed(1)}px, ${(y * 0.35).toFixed(1)}px)`;
+      });
+      btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+    });
+
+    /* Tilt cards */
+    document.querySelectorAll('[data-tilt]').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const r = card.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width - 0.5;
+        const py = (e.clientY - r.top) / r.height - 0.5;
+        card.style.transform = `perspective(900px) rotateY(${(px * 7).toFixed(2)}deg) rotateX(${(py * -7).toFixed(2)}deg)`;
+      });
+      card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+    });
   }
 
   /* ---------- FAQ accordion ---------- */
