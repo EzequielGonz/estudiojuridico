@@ -3,6 +3,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const canFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
+  /* ---------- Theme toggle (dark by default) ---------- */
+  const THEME_KEY = 'vita-theme';
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('theme-toggle');
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      const isLight = root.getAttribute('data-theme') === 'light';
+      const next = isLight ? 'dark' : 'light';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* ignore (private mode) */ }
+    });
+  }
+
   /* ---------- Hero title word-split (must run before preloader fades) ---------- */
   const heroTitle = document.getElementById('hero-title');
   if (heroTitle) {
