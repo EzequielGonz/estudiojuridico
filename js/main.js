@@ -1,122 +1,97 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* ---------- Header scroll state ---------- */
-  const header = document.querySelector('.header');
-  const backToTop = document.querySelector('.float-top');
+  const header = document.querySelector('.site-header');
+  const utilTop = document.querySelector('.util-top');
+
   const onScroll = () => {
-    header.classList.toggle('is-scrolled', window.scrollY > 40);
-    backToTop.classList.toggle('is-visible', window.scrollY > 600);
+    header.classList.toggle('scrolled', window.scrollY > 30);
+    utilTop.classList.toggle('show', window.scrollY > 700);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  /* ---------- Mobile nav toggle ---------- */
-  const navToggle = document.querySelector('.nav-toggle');
-  const navLinks = document.querySelector('.nav-links');
-  const iconMenu = navToggle.querySelector('.icon-menu');
-  const iconClose = navToggle.querySelector('.icon-close');
+  /* ---------- Desktop dropdown menus ---------- */
+  const menuItems = document.querySelectorAll('.menu-item.has-sub');
+  const closeAllMenus = () => menuItems.forEach(mi => mi.classList.remove('open'));
 
-  const closeNav = () => {
-    navLinks.classList.remove('is-open');
-    iconMenu.style.display = '';
-    iconClose.style.display = 'none';
-    document.body.style.overflow = '';
-  };
-  const toggleNav = () => {
-    const open = navLinks.classList.toggle('is-open');
-    iconMenu.style.display = open ? 'none' : '';
-    iconClose.style.display = open ? '' : 'none';
-    document.body.style.overflow = open ? 'hidden' : '';
-  };
-  navToggle.addEventListener('click', toggleNav);
-  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', closeNav));
+  menuItems.forEach(item => {
+    const trigger = item.querySelector('button');
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const willOpen = !item.classList.contains('open');
+      closeAllMenus();
+      if (willOpen) item.classList.add('open');
+    });
+  });
+  document.addEventListener('click', closeAllMenus);
 
-  /* ---------- Active nav link on scroll ---------- */
+  /* ---------- Mobile drawer ---------- */
+  const drawer = document.querySelector('.drawer');
+  const burger = document.querySelector('.burger');
+  const drawerClose = document.querySelector('.drawer-close');
+  const drawerBackdrop = document.querySelector('.drawer-backdrop');
+
+  const openDrawer = () => { drawer.classList.add('open'); document.body.style.overflow = 'hidden'; };
+  const closeDrawer = () => { drawer.classList.remove('open'); document.body.style.overflow = ''; };
+
+  burger.addEventListener('click', openDrawer);
+  drawerClose.addEventListener('click', closeDrawer);
+  drawerBackdrop.addEventListener('click', closeDrawer);
+  drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', closeDrawer));
+
+  /* ---------- Active link on scroll ---------- */
   const sections = document.querySelectorAll('main section[id]');
-  const navAnchors = document.querySelectorAll('.nav-links a[href^="#"]');
-  const setActive = () => {
+  const links = document.querySelectorAll('.menu a[href^="#"], .submenu a[href^="#"]');
+  const markActive = () => {
     let current = '';
-    const pos = window.scrollY + 140;
-    sections.forEach(sec => {
-      if (pos >= sec.offsetTop) current = sec.id;
-    });
-    navAnchors.forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
-    });
+    const pos = window.scrollY + 150;
+    sections.forEach(sec => { if (pos >= sec.offsetTop) current = sec.id; });
+    links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
   };
-  window.addEventListener('scroll', setActive, { passive: true });
-  setActive();
+  window.addEventListener('scroll', markActive, { passive: true });
+  markActive();
 
   /* ---------- Scroll reveal ---------- */
-  const revealEls = document.querySelectorAll('[data-reveal]');
+  const revealEls = document.querySelectorAll('[data-in]');
   if ('IntersectionObserver' in window) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
+          entry.target.classList.add('shown');
           io.unobserve(entry.target);
         }
       });
-    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    }, { threshold: 0.12, rootMargin: '0px 0px -50px 0px' });
     revealEls.forEach(el => io.observe(el));
   } else {
-    revealEls.forEach(el => el.classList.add('is-visible'));
-  }
-
-  /* ---------- Animated counters ---------- */
-  const counters = document.querySelectorAll('[data-count]');
-  const animateCounter = (el) => {
-    const target = parseFloat(el.getAttribute('data-count'));
-    const decimals = el.getAttribute('data-count').includes('.') ? 1 : 0;
-    const duration = 1600;
-    const start = performance.now();
-    const step = (now) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const value = target * eased;
-      el.textContent = decimals ? value.toFixed(1) : Math.round(value).toLocaleString('es-AR');
-      if (progress < 1) requestAnimationFrame(step);
-      else el.textContent = decimals ? target.toFixed(1) : target.toLocaleString('es-AR');
-    };
-    requestAnimationFrame(step);
-  };
-  if ('IntersectionObserver' in window && counters.length) {
-    const cIo = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          animateCounter(entry.target);
-          cIo.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.4 });
-    counters.forEach(c => cIo.observe(c));
+    revealEls.forEach(el => el.classList.add('shown'));
   }
 
   /* ---------- FAQ accordion ---------- */
-  document.querySelectorAll('.faq-item').forEach(item => {
-    const q = item.querySelector('.faq-q');
-    const a = item.querySelector('.faq-a');
+  document.querySelectorAll('.faq-row').forEach(row => {
+    const q = row.querySelector('.faq-q');
+    const a = row.querySelector('.faq-a');
     q.addEventListener('click', () => {
-      const isOpen = item.classList.contains('is-open');
-      document.querySelectorAll('.faq-item.is-open').forEach(openItem => {
-        if (openItem !== item) {
-          openItem.classList.remove('is-open');
-          openItem.querySelector('.faq-a').style.maxHeight = null;
+      const isOpen = row.classList.contains('open');
+      document.querySelectorAll('.faq-row.open').forEach(openRow => {
+        if (openRow !== row) {
+          openRow.classList.remove('open');
+          openRow.querySelector('.faq-a').style.maxHeight = null;
         }
       });
       if (isOpen) {
-        item.classList.remove('is-open');
+        row.classList.remove('open');
         a.style.maxHeight = null;
       } else {
-        item.classList.add('is-open');
+        row.classList.add('open');
         a.style.maxHeight = a.scrollHeight + 'px';
       }
     });
   });
 
-  /* ---------- Contact form (mailto fallback, no backend) ---------- */
+  /* ---------- Contact form (no backend — mailto fallback) ---------- */
   const form = document.getElementById('contact-form');
-  const successBox = document.getElementById('form-success');
+  const formOk = document.getElementById('form-ok');
   const FIRM_EMAIL = 'estudiojuridicointegralvita@gmail.com';
 
   if (form) {
@@ -139,14 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
       );
       window.location.href = `mailto:${FIRM_EMAIL}?subject=${subject}&body=${body}`;
 
-      successBox.classList.add('is-visible');
+      formOk.classList.add('show');
       form.reset();
-      setTimeout(() => successBox.classList.remove('is-visible'), 6000);
+      setTimeout(() => formOk.classList.remove('show'), 6000);
     });
   }
 
   /* ---------- Back to top ---------- */
-  backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  utilTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
   /* ---------- Footer year ---------- */
   const yearEl = document.getElementById('year');
